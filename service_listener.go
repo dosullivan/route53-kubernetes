@@ -202,14 +202,21 @@ func findMostSpecificZoneForDomain(domain string, zones []*route53.HostedZone) (
 	}
 	var mostSpecific *route53.HostedZone
 	curLen := 0
+	curPrivate := false
 
 	for i := range zones {
 		zone := zones[i]
 		zoneName := *zone.Name
 
-		if strings.HasSuffix(domain, zoneName) && curLen < len(zoneName) {
-			curLen = len(zoneName)
-			mostSpecific = zone
+		if strings.HasSuffix(domain, zoneName) {
+			if curLen < len(zoneName) {
+				curLen = len(zoneName)
+				curPrivate = *zone.Config.PrivateZone
+				mostSpecific = zone
+			} else if curLen == len(zoneName) && !curPrivate && *zone.Config.PrivateZone {
+				curPrivate = true
+				mostSpecific = zone
+			}
 		}
 	}
 

@@ -38,22 +38,29 @@ func TestLoadBalancerNameFromHostname(t *testing.T) {
 
 func TestFindMostSpecificZoneForDomain(t *testing.T) {
 	demo := route53.HostedZone{
-		Name: aws.String("demo.com."),
+		Name: aws.String("demo.com.")
 	}
-	demoSub := route53.HostedZone{
+	demoSubPub := route53.HostedZone{
 		Name: aws.String("sub.demo.com."),
+	}
+	demoSubPriv := route53.HostedZone{
+		Name: aws.String("sub.demo.com."),
+		Config: route53.HostedZoneConfig{
+			PrivateZone: true
+		}
 	}
 	zones := []*route53.HostedZone{
 		&demo,
-		&demoSub,
+		&demoSubPub,
+		&demoSubPriv
 	}
 
 	scenarios := map[string]*route53.HostedZone{
 		".demo.com":           &demo,
 		"test.demo.com":       &demo,
 		"test.again.demo.com": &demo,
-		"sub.demo.com":        &demoSub,
-		"test.sub.demo.com":   &demoSub,
+		"sub.demo.com":        &demoSubPriv,
+		"test.sub.demo.com":   &demoSubPriv,
 	}
 
 	for domain, expectedZone := range scenarios {
